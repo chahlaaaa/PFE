@@ -1,22 +1,16 @@
-const { DataTypes, Model } = require('sequelize');
-const sequelize = require('../config/db');
-const User = require('./user');
+const db = require('../config/db');
 
-class Student extends Model {}
-
-Student.init({
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-}, {
-  sequelize,
-  modelName: 'Student',
-  tableName: 'students'
-});
-
-// كل Student مرتبط بـ User
-Student.belongsTo(User, { foreignKey: 'userId' });
-User.hasOne(Student, { foreignKey: 'userId' });
+const Student = {
+    findByClasse: async (classeName) => {
+        const query = `
+            SELECT e.idEtudiant as id, u.nom, u.email 
+            FROM Etudiant e
+            JOIN Utilisateur u ON e.idEtudiant = u.idUtilisateur
+            JOIN Groupe g ON ... -- اربطها حسب جدول المجموعات لديك
+            WHERE g.nomGroupe = ?`;
+        const [rows] = await db.query(query, [classeName]);
+        return rows;
+    }
+};
 
 module.exports = Student;

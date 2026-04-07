@@ -1,21 +1,17 @@
-// models/Note.js
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
-const Student = require('./student');
-const Course = require('./cours');
+const db = require('../config/db');
 
-const Note = sequelize.define('Note', {
-  value: { type: DataTypes.FLOAT, allowNull: false }
-}, {
-  tableName: 'notes',
-  timestamps: true
-});
-
-// علاقات
-Note.belongsTo(Student, { foreignKey: 'studentId', onDelete: 'CASCADE' });
-Student.hasMany(Note, { foreignKey: 'studentId' });
-
-Note.belongsTo(Course, { foreignKey: 'courseId', onDelete: 'CASCADE' });
-Course.hasMany(Note, { foreignKey: 'courseId' });
+const Note = {
+    getLatestNotes: async (limit = 5) => {
+        const query = `
+            SELECT u.nom, n.valeur, c.nomCours
+            FROM Note n
+            JOIN Etudiant e ON n.idEtudiant = e.idEtudiant
+            JOIN Utilisateur u ON e.idEtudiant = u.idUtilisateur
+            JOIN Cours c ON n.idCours = c.idCours
+            ORDER BY n.idNote DESC LIMIT ?`;
+        const [rows] = await db.query(query, [limit]);
+        return rows;
+    }
+};
 
 module.exports = Note;
