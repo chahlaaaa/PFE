@@ -25,3 +25,16 @@ const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`✅ السيرفر يعمل بنجاح على http://localhost:${PORT}`);
 });
+app.get('/api/dashboard/stats', (req, res) => {
+    // استعلام لجلب عدد الطلاب من القاعدة
+    db.query('SELECT COUNT(*) as count FROM Etudiant', (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        // نرسل رقم حقيقي من القاعدة، وأرقام وهمية للبقية حالياً لتجربة الواجهة
+        res.json({
+            students: result[0].count,
+            evaluations: 3, 
+            absences: 7
+        });
+    });
+});
