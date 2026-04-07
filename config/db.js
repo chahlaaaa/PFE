@@ -1,18 +1,23 @@
-const mysql = require("mysql2");
+const mysql = require('mysql2/promise'); // استخدام نسخة الـ promise
 
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "school_app"
+const db = mysql.createPool({
+    host: 'localhost',
+    user: 'root',
+    password: '', // اتركها فارغة إذا كنت تستخدم XAMPP الافتراضي
+    database: 'school_app' // تأكد أن هذا هو اسم قاعدة بياناتك
 });
 
-db.connect(err => {
-  if (err) {
-    console.log(" Erreur DB:", err.message);
-  } else {
-    console.log(" DB connected");
-  }
-});
+// بدلاً من db.connect، نستخدم هذا الكود للتأكد من الاتصال
+async function checkConnection() {
+    try {
+        const connection = await db.getConnection();
+        console.log('✅ متصل بقاعدة البيانات بنجاح!');
+        connection.release(); // إعادة الاتصال للمسبح (Pool)
+    } catch (err) {
+        console.error('❌ فشل الاتصال بقاعدة البيانات:', err.message);
+    }
+}
+
+checkConnection();
 
 module.exports = db;

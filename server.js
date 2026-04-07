@@ -1,40 +1,21 @@
 const express = require('express');
-const path = require('path');
-const db = require('./config/db'); // ملف قاعدة البيانات الذي أنشأته سابقاً
+const path = require('path'); // أضف هذا السطر في الأعلى
 const app = express();
+const absenceRoutes = require('./routes/absences');
 
 app.use(express.json());
-// إخبار السيرفر بمكان ملفات الواجهة
-app.use(express.static(path.join(__dirname, 'public')));
 
-// مسارات واجهات المستخدم
-app.get('/enseignant', (req, res) => {
+// 1. مسارات الـ API (تعمل خلف الكواليس)
+app.use('/api/absences', absenceRoutes);
+
+// 2. إخبار السيرفر بمكان ملفات الواجهة (HTML, JS, CSS)
+// هذا السطر سيحل مشكلة "Cannot GET /"
+app.use(express.static(path.join(__dirname, 'public')));
+// 3. توجيه الطلب الرئيسي لفتح ملف index.html
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/secretaire', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index1.html'));
-});
-
-// مسار افتراضي
-app.get('/', (req, res) => {
-    res.redirect('/enseignant');
-});
-
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`✅ السيرفر يعمل بنجاح على http://localhost:${PORT}`);
-});
-app.get('/api/dashboard/stats', (req, res) => {
-    // استعلام لجلب عدد الطلاب من القاعدة
-    db.query('SELECT COUNT(*) as count FROM Etudiant', (err, result) => {
-        if (err) return res.status(500).json({ error: err.message });
-        
-        // نرسل رقم حقيقي من القاعدة، وأرقام وهمية للبقية حالياً لتجربة الواجهة
-        res.json({
-            students: result[0].count,
-            evaluations: 3, 
-            absences: 7
-        });
-    });
+app.listen(3000, () => {
+    console.log('Server is running on http://localhost:3000');
 });

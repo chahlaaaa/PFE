@@ -1,22 +1,19 @@
 const db = require('../config/db');
 
 const Absence = {
-    // جلب كل الغيابات مع أسماء الطلاب
-    findAll: async (filters = {}) => {
-        let query = `
+    // جلب الغيابات مع ربط الجداول (Joins)
+    findAll: async () => {
+        const query = `
             SELECT a.*, u.nom as eleve_nom_complet 
             FROM absences a 
             JOIN Etudiant e ON a.eleve_id = e.idEtudiant
             JOIN Utilisateur u ON e.idEtudiant = u.idUtilisateur
-            WHERE 1=1`;
-        const params = [];
-        // يمكنك إضافة الفلاتر هنا (التاريخ، الحالة...)
-        query += ' ORDER BY a.date_absence DESC';
-        const [rows] = await db.query(query, params);
+            ORDER BY a.date_absence DESC`;
+        const [rows] = await db.query(query);
         return rows;
     },
 
-    // حفظ مصفوفة غيابات (Bulk Insert)
+    // تسجيل مصفوفة غيابات دفعة واحدة
     createMany: async (absencesList, adminId) => {
         const sql = `INSERT INTO absences 
             (eleve_id, eleve_nom, date_absence, seance, justifiee, enregistre_par) 

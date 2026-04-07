@@ -567,16 +567,53 @@ function Absences({ onNavigate, onLogout }) {
 
   const setPresence = (id, val) => setPresences(p => ({ ...p, [id]: p[id] === val ? null : val }));
 
-  function enregistrer() {
-    const absents    = eleves.filter(e => presences[e.id] === "absent");
-    const newEntries = absents.map((e, i) => ({
-      id: Date.now() + i, eleve: e.nom, date: todayStr(), seance: matiere, justifiee: "En attente",
-    }));
-    setHistorique(prev => [...prev, ...newEntries]);
-    setPresences({});
-    setSavedMsg(true);
-    setTimeout(() => setSavedMsg(false), 2500);
+ async function enregistrer() {
+  // 1. تحضير قائمة الغيابات بصيغة يفهمها السيرفر
+  const absents = eleves.filter(e => presences[e.id] === "absent");
+  
+  if (absents.length === 0) {
+    alert("الرجاء اختيار الطلاب الغائبين أولاً");
+    return;
   }
+
+  const absencesList = absents.map(e => ({
+    eleve_id: e.id,           // التأكد أن هذا هو الـ ID من قاعدة البيانات
+    eleve_nom: e.nom,
+    date_absence: new Date().toISOString().split('T')[0], // تاريخ اليوم YYYY-MM-DD
+    seance: seance            // القيمة المأخوذة من الـ Select
+  }));
+
+  try {
+    // 2. إرسال البيانات إلى السيرفر (الـ Route الذي أنشأناه)
+    const response = await fetch('http://localhost:3000/api/absences', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        // إذا كنت تستخدم نظام حماية، تأكد من إرسال التوكن هنا
+        'Authorization': `Bearer ${localStorage.getItem('token')}` 
+      },
+      body: JSON.stringify({ absences: absencesList })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      // 3. تحديث الواجهة بعد النجاح
+      setSavedMsg(true);
+      // تحديث التاريخ المحلي (اختياري)
+      const newEntries = absencesList.map((a, i) => ({ ...a, id: Date.now() + i, eleve: a.eleve_nom, date: a.date_absence, justifiee: "En attente" }));
+      setHistorique(prev => [...prev, ...newEntries]);
+      
+      setPresences({}); // تفريغ الاختيارات
+      setTimeout(() => setSavedMsg(false), 2500);
+    } else {
+      alert("خطأ: " + result.message);
+    }
+  } catch (error) {
+    console.error("خطأ في الاتصال:", error);
+    alert("تعذر الاتصال بالسيرفر، تأكد أن السيرفر يعمل");
+  }
+}
 
   function toggleJustif(id) {
     const cycle = { "En attente": "Oui", "Oui": "Non", "Non": "En attente" };
