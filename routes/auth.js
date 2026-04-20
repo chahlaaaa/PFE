@@ -1,7 +1,3 @@
-// ============================================================
-// routes/auth.js — مسارات المصادقة (تسجيل الدخول / التسجيل)
-// ============================================================
-
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
@@ -9,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 const { JWT_SECRET, JWT_EXPIRES_IN } = require('../config/auth');
 
-// ── تسجيل الدخول ──────────────────────────────────────
+// ── 1. تسجيل الدخول (Login) ──────────────────────────────────
 router.post('/login', async (req, res) => {
   try {
     const { username, password, role } = req.body;
@@ -18,27 +14,29 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ success: false, message: 'اسم المستخدم وكلمة المرور مطلوبان' });
     }
 
-    // البحث عن المستخدم
+    // البحث في جدول utilisateurs الجديد واستخدام nom_utilisateur
     const [users] = await db.query(
-      'SELECT * FROM users WHERE username = ? AND role = ? AND actif = 1',
+      'SELECT * FROM utilisateurs WHERE nom_utilisateur = ? AND role = ?',
       [username, role]
     );
 
     if (users.length === 0) {
-      return res.status(401).json({ success: false, message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+      return res.status(401).json({ success: false, message: 'المستخدم غير موجود أو الدور غير صحيح' });
     }
 
     const user = users[0];
 
-    // التحقق من كلمة المرور
-    const isMatch = await bcrypt.compare(password, user.password);
+    // التحقق من كلمة المرور (ملاحظة: إذا كانت الكلمة في القاعدة غير مشفرة استخدم المقارنة العادية)
+    // const isMatch = await bcrypt.compare(password, user.mot_de_passe); 
+    const isMatch = (password === user.mot_de_passe); 
+
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+      return res.status(401).json({ success: false, message: 'كلمة المرور غير صحيحة' });
     }
 
     // إنشاء التوكن
     const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role, nom: user.nom_complet },
+      { id: user.id, username: user.nom_utilisateur, role: user.role, nom: user.nom_complet },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
@@ -50,11 +48,9 @@ router.post('/login', async (req, res) => {
         token,
         user: {
           id: user.id,
-          username: user.username,
+          username: user.nom_utilisateur,
           nom: user.nom_complet,
-          role: user.role,
-          email: user.email,
-          avatar_color: user.avatar_color
+          role: user.role
         }
       }
     });
@@ -65,49 +61,30 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// ── التحقق من التوكن ──────────────────────────────────
-router.get('/verify', (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, message: 'غير مصرح' });
-  }
-
-  const token = authHeader.split(' ')[1];
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    res.json({ success: true, data: { user: decoded } });
-  } catch (error) {
-    res.status(401).json({ success: false, message: 'توكن غير صالح' });
-  }
-});
-
-// ── إنشاء مستخدم جديد (للمدير فقط) ───────────────────
+// ── 2. إنشاء مستخدم جديد (Register) ──────────────────────────
 router.post('/register', async (req, res) => {
   try {
-    const { username, password, nom_complet, email, telephone, role } = req.body;
+    const { username, password, nom_complet, role } = req.body;
 
-    if (!username || !password || !nom_complet || !role) {
-      return res.status(400).json({ success: false, message: 'جميع الحقول مطلوبة' });
+    if (!username || !password || !role) {
+      return res.status(400).json({ success: false, message: 'جميع الحقول الأساسية مطلوبة' });
     }
 
-    // التحقق من عدم وجود المستخدم
-    const [existing] = await db.query('SELECT id FROM users WHERE username = ?', [username]);
+    // التحقق من عدم تكرار اسم المستخدم في الجدول الجديد
+    const [existing] = await db.query('SELECT id FROM utilisateurs WHERE nom_utilisateur = ?', [username]);
     if (existing.length > 0) {
       return res.status(409).json({ success: false, message: 'اسم المستخدم موجود بالفعل' });
     }
 
-    // تشفير كلمة المرور
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // إدراج المستخدم
+    // إدراج البيانات في جدول utilisateurs
     const [result] = await db.query(
-      'INSERT INTO users (username, password, nom_complet, email, telephone, role) VALUES (?, ?, ?, ?, ?, ?)',
-      [username, hashedPassword, nom_complet, email, telephone, role]
+      'INSERT INTO utilisateurs (nom_utilisateur, mot_de_passe, nom_complet, role) VALUES (?, ?, ?, ?)',
+      [username, password, nom_complet, role]
     );
 
     res.status(201).json({
       success: true,
-      message: 'تم إنشاء المستخدم بنجاح',
+      message: 'تم إنشاء الحساب بنجاح',
       data: { id: result.insertId }
     });
 
@@ -117,40 +94,15 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// ── قائمة المستخدمين ──────────────────────────────────
+// ── 3. جلب قائمة المستخدمين ──────────────────────────────────
 router.get('/users', async (req, res) => {
   try {
     const [users] = await db.query(
-      'SELECT id, username, nom_complet, email, telephone, role, avatar_color, actif, created_at FROM users ORDER BY id'
+      'SELECT id, nom_utilisateur, nom_complet, role, created_at FROM utilisateurs ORDER BY id DESC'
     );
     res.json({ success: true, data: users });
   } catch (error) {
     console.error('خطأ في جلب المستخدمين:', error);
-    res.status(500).json({ success: false, message: 'خطأ في الخادم' });
-  }
-});
-
-// ── تغيير كلمة المرور ─────────────────────────────────
-router.put('/change-password', async (req, res) => {
-  try {
-    const { userId, oldPassword, newPassword } = req.body;
-
-    const [users] = await db.query('SELECT * FROM users WHERE id = ?', [userId]);
-    if (users.length === 0) {
-      return res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
-    }
-
-    const isMatch = await bcrypt.compare(oldPassword, users[0].password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'كلمة المرور الحالية غير صحيحة' });
-    }
-
-    const hashed = await bcrypt.hash(newPassword, 10);
-    await db.query('UPDATE users SET password = ? WHERE id = ?', [hashed, userId]);
-
-    res.json({ success: true, message: 'تم تغيير كلمة المرور بنجاح' });
-  } catch (error) {
-    console.error('خطأ في تغيير كلمة المرور:', error);
     res.status(500).json({ success: false, message: 'خطأ في الخادم' });
   }
 });

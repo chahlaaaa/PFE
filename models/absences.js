@@ -9,6 +9,8 @@ const Absence = {
             JOIN Etudiant e ON a.eleve_id = e.idEtudiant
             JOIN Utilisateur u ON e.idEtudiant = u.idUtilisateur
             ORDER BY a.date_absence DESC`;
+        
+        // استخدام [rows] يتطلب أن يكون db.js يستخدم mysql2/promise
         const [rows] = await db.query(query);
         return rows;
     },

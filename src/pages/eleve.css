@@ -1,0 +1,253 @@
+/* ============================================================
+   Eleve.css — Styles de la page Élève
+   Thème : identique à style.css Enseignant (navy #1a2236)
+   Seules les classes propres à l'élève sont ici.
+   Les classes partagées (sidebar, nav-item, stats-grid…)
+   sont déjà définies dans style.css / index.css.
+   ============================================================ */
+
+/* ── VARIABLES (reprises de style.css) ─────────────────────── */
+:root {
+  --navy:           #1a2236;
+  --navy-light:     #243048;
+  --navy-border:    #2e3d58;
+  --accent-blue:    #4f8ef7;
+  --accent-indigo:  #6366f1;
+  --accent-orange:  #f97316;
+  --accent-red:     #ef4444;
+  --accent-green:   #22c55e;
+  --text-primary:   #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
+  --bg-main:        #f0f4fb;
+  --card-border:    #e8edf5;
+}
+
+/* ── LAYOUT ÉLÈVE (même structure que .app-layout) ─────────── */
+.eleve-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg-main);
+}
+
+/* ── SIDEBAR (reprend sidebar de style.css) ─────────────────── */
+/* Les classes .sidebar .nav-item .sidebar-user etc.
+   sont déjà dans style.css — on surcharge uniquement
+   ce qui est spécifique au logo élève                          */
+
+/* Zone logo spécifique élève (emoji + texte arabe) */
+.sidebar-logo-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 16px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  gap: 4px;
+}
+
+/* Icône logo (cercle avec emoji) */
+.sidebar-logo-icon-wrap {
+  width: 58px;
+  height: 58px;
+  background: rgba(255,255,255,.12);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin-bottom: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+}
+.sidebar-logo-emoji { line-height: 1; }
+
+/* Titre arabe */
+.sidebar-logo-text {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  direction: rtl;
+  font-family: 'Scheherazade New', 'Amiri', serif;
+  letter-spacing: 0;
+}
+
+/* Sous-titre Ways of Success */
+.sidebar-logo-sub {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,.38);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ── CONTENU PRINCIPAL ──────────────────────────────────────── */
+/* .main-content est déjà dans style.css               */
+
+/* ── CARTE PROFIL ÉLÈVE (dark navy banner) ──────────────────── */
+.eleve-profile-card {
+  background: linear-gradient(135deg, #1a2236 0%, #2d3f56 100%);
+  border-radius: 20px;
+  padding: 26px 30px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 22px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.14);
+  position: relative;
+  overflow: hidden;
+}
+/* Cercle décoratif en fond (même pattern que stat-card::after) */
+.eleve-profile-card::after {
+  content: '';
+  position: absolute;
+  right: -50px; top: -50px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: rgba(79,142,247,.1);
+  pointer-events: none;
+}
+
+/* Avatar initiales de l'élève */
+.eleve-profile-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+  border: 3px solid rgba(255,255,255,.18);
+  box-shadow: 0 4px 16px rgba(79,142,247,.35);
+}
+
+.eleve-profile-info { flex: 1; }
+
+/* Nom de l'élève */
+.eleve-profile-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+  letter-spacing: -.3px;
+}
+
+/* Sous-titre (année + numéro) */
+.eleve-profile-sub {
+  font-size: 12.5px;
+  color: rgba(255,255,255,.5);
+  margin-bottom: 0;
+}
+
+/* Zone niveau (à droite de la carte) */
+.eleve-profile-level {
+  text-align: right;
+  padding-left: 22px;
+  min-width: 110px;
+}
+
+/* ── BADGE NIVEAU (dashboard header notes) ──────────────────── */
+.eleve-level-pill {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1.5px solid var(--card-border);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+/* ── MINI BARRE DE PROGRESSION (tableau notes) ──────────────── */
+.eleve-mini-bar {
+  height: 4px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 54px;
+}
+.eleve-mini-bar > div {
+  height: 100%;
+  border-radius: 4px;
+  transition: width .4s ease;
+}
+
+/* ── VALEUR MOYENNE (petite taille pour tableau) ────────────── */
+.stat-number-sm {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+ 
+}
+
+/* ── BANNIÈRE INFO PASSAGE DE NIVEAU ────────────────────────── */
+.eleve-info-banner {
+  margin-top: 16px;
+  background: #EFF6FF;
+  border: 1.5px solid #BFDBFE;
+  border-radius: 12px;
+  padding: 13px 18px;
+  font-size: 13px;
+  color: #1e40af;
+  line-height: 1.6;
+}
+
+/*  RÉSUMÉ EDT (Français / Anglais en haut) */
+.eleve-edt-summary {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.eleve-edt-summary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ── LÉGENDE EDT ────────────────────────────────────────────── */
+.eleve-edt-legend {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.eleve-legend-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── OVERRIDES STAT-CARD POUR PAGE ABSENCES ─────────────────── */
+/* On surcharge la couleur du number orange pour la carte "Justifiées"
+   afin d'afficher en vert au lieu de orange                    */
+.stat-card.orange .stat-number.green-override { color: var(--accent-green); }
+
+/* ── RESPONSIVE SIMPLE ──────────────────────────────────────── */
+@media (max-width: 900px) {
+  .eleve-profile-level { display: none; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 640px) {
+  .eleve-layout { flex-direction: column; }
+  .sidebar       { width: 100%; height: auto; }
+  .stats-grid    { grid-template-columns: 1fr; }
+  .bottom-grid   { grid-template-columns: 1fr; }
+  .eleve-profile-card { flex-direction: column; text-align: center; }
+}
