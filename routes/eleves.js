@@ -1,5 +1,5 @@
 // ============================================================
-// routes/etudiant.js — مسارات إدارة الطلاب
+// routes/eleves.js — مسارات إدارة الطلاب
 // ============================================================
 
 const express = require('express');
@@ -30,8 +30,8 @@ router.get('/', authenticate, async (req, res) => {
 
     query += ' ORDER BY nom';
 
-    const [etudiant] = await db.query(query, params);
-    res.json({ success: true, data: etudiant });
+    const [eleves] = await db.query(query, params);
+    res.json({ success: true, data: eleves });
   } catch (error) {
     console.error('خطأ في جلب الطلاب:', error);
     res.status(500).json({ success: false, message: 'خطأ في الخادم' });
@@ -41,7 +41,7 @@ router.get('/', authenticate, async (req, res) => {
 // ── جلب طالب واحد ─────────────────────────────────────
 router.get('/:id', authenticate, async (req, res) => {
   try {
-    const [etudiant] = await db.query('SELECT * FROM etudiant WHERE id = ?', [req.params.id]);
+    const [eleves] = await db.query('SELECT * FROM eleves WHERE id = ?', [req.params.id]);
     if (eleves.length === 0) {
       return res.status(404).json({ success: false, message: 'الطالب غير موجود' });
     }

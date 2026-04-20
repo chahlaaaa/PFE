@@ -585,7 +585,7 @@ function Absences({ onNavigate, onLogout }) {
 
   try {
     // 2. إرسال البيانات إلى السيرفر (الـ Route الذي أنشأناه)
-    const response = await fetch('http://localhost:5000/api/absences', {
+    const response = await fetch('http://localhost:3000/api/absences', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
