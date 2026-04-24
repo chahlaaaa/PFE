@@ -1,21 +1,50 @@
 const express = require('express');
-const path = require('path'); // أضف هذا السطر في الأعلى
+const cors = require('cors'); // 1. أضيفي هذه المكتبة
 const app = express();
-const absenceRoutes = require('./routes/absences');
 
+// 2. تفعيل CORS للسماح لـ React بالاتصال بالسيرفر
+app.use(cors()); 
+
+// ضروري لقراءة البيانات القادمة من React
 app.use(express.json());
 
-// 1. مسارات الـ API (تعمل خلف الكواليس)
-app.use('/api/absences', absenceRoutes);
+try {
+    // استيراد المسارات
+    const authRoutes = require('./routes/loginRoutes');
+    const etudiantRoutes = require('./routes/etudiantRoutes');
+    const paymentRoutes = require('./routes/paymentRoutes');
+    const groupesRoutes = require('./routes/groupesRoutes');
+    const superviseurRoutes = require('./routes/superviseurRoutes');
+    const enseignantRoutes = require('./routes/enseignantRoutes');
+    const formationRoutes = require('./routes/formationRoutes');
+    const presenceRoutes = require('./routes/presenceRoutes');
+    const resourceRoutes = require('./routes/resourceRoutes'); // 3. تم إضافة الاستيراد الناقص هنا
+    const dashboardRoutes = require('./routes/dashboard'); 
 
-// 2. إخبار السيرفر بمكان ملفات الواجهة (HTML, JS, CSS)
-// هذا السطر سيحل مشكلة "Cannot GET /"
-app.use(express.static(path.join(__dirname, 'public')));
-// 3. توجيه الطلب الرئيسي لفتح ملف index.html
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+    // استخدام المسارات
+    app.use('/api/auth', authRoutes);
+    app.use('/api/students', etudiantRoutes);
+    app.use('/api/payments', paymentRoutes);
+    app.use('/api/groupes', groupesRoutes);
+    app.use('/api/superviseur', superviseurRoutes);
+    app.use('/api/enseignant', enseignantRoutes);
+    app.use('/api/formation', formationRoutes);
+    app.use('/api/presence', presenceRoutes);
+    app.use('/api/ressources', resourceRoutes);
+    app.use('/api/dashboard', dashboardRoutes);
 
-app.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
+
+    // 4. مسار ترحيبي للتأكد من عمل السيرفر
+    app.get('/', (req, res) => {
+        res.send('<h1>School API is Running... 🚀</h1>');
+    });
+
+} catch (error) {
+    console.error("❌ خطأ في تحميل أحد الملفات من مجلد routes:");
+    console.error(error.message);
+}
+
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`✅ Server is running on http://localhost:${PORT}`);
 });

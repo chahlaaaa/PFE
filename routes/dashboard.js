@@ -3,6 +3,10 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 
+const dashboardController = require('../controllers/dashboardController');
+// توجيه الطلب إلى الدالة المناسبة في الكنترولر
+router.get('/stats', dashboardController.getDashboardStats);
+
 router.get('/stats', (req, res) => {
     const queries = {
         totalStudents: "SELECT COUNT(*) as count FROM Etudiant",

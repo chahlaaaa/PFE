@@ -1,43 +1,15 @@
-// ============================================================
-// middleware/auth.js — وسيط المصادقة JWT
-// ============================================================
-
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../config/auth');
 
-// التحقق من صحة التوكن
-function authenticate(req, res, next) {
-  const authHeader = req.headers.authorization;
+module.exports = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1];
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, message: 'غير مصرح - يرجى تسجيل الدخول' });
-  }
+    if (!token) return res.status(403).send("يجب تسجيل الدخول أولاً");
 
-  const token = authHeader.split(' ')[1];
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ success: false, message: 'انتهت صلاحية الجلسة - يرجى تسجيل الدخول مجدداً' });
+    try {
+        const decoded = jwt.verify(token, "super_secret_key_123");
+        req.user = decoded; // حفظ بيانات المستخدم في الطلب
+        next(); // السماح بالمرور للمسار التالي
+    } catch (err) {
+        return res.status(401).send("توكن غير صالح");
     }
-    return res.status(401).json({ success: false, message: 'توكن غير صالح' });
-  }
-}
-
-// التحقق من الدور
-function checkRole(...roles) {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({ success: false, message: 'غير مصرح' });
-    }
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ success: false, message: 'ليس لديك صلاحية لهذا الإجراء' });
-    }
-    next();
-  };
-}
-
-module.exports = { authenticate, checkRole };
+};

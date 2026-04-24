@@ -1,17 +1,16 @@
-const db = require('../config/db');
+// models/Note.js
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
-const Note = {
-    getLatestNotes: async (limit = 5) => {
-        const query = `
-            SELECT u.nom, n.valeur, c.nomCours
-            FROM Note n
-            JOIN Etudiant e ON n.idEtudiant = e.idEtudiant
-            JOIN Utilisateur u ON e.idEtudiant = u.idUtilisateur
-            JOIN Cours c ON n.idCours = c.idCours
-            ORDER BY n.idNote DESC LIMIT ?`;
-        const [rows] = await db.query(query, [limit]);
-        return rows;
+const Note = sequelize.define('Note', {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    valeur: { type: DataTypes.FLOAT }, // النقطة الفعلية
+    test1: { type: DataTypes.FLOAT },
+    test2: { type: DataTypes.FLOAT },
+    studentId: { 
+        type: DataTypes.INTEGER,
+        references: { model: 'etudiant', key: 'id' }
     }
-};
+}, { tableName: 'note', timestamps: false });
 
 module.exports = Note;
