@@ -6,7 +6,7 @@ import Secretaire from './pages/Secretaire'
 import Eleve from './pages/eleve'
 import Directeur from './pages/directeur'
 import Superviseur from './pages/superviseur'
-import Parent from './pages/parent'
+
 
 export default function App() {
   return (
@@ -42,10 +42,6 @@ export default function App() {
         element={<ProtectedRoute allowedRoles={['superviseur']}><Superviseur /></ProtectedRoute>} 
       />
       
-      <Route 
-        path="/parent" 
-        element={<ProtectedRoute allowedRoles={['parent']}><Parent /></ProtectedRoute>} 
-      />
 
       {/* أي مسار غير معروف يعيد المستخدم للوجن */}
       <Route path="*" element={<Navigate to="/login" replace />} />
